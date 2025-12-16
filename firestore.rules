@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Match the user's document based on their Auth ID
+    match /users/{userId} {
+      
+      // Allow reading/writing only if the request comes from the logged-in user
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // VALIDATION: Enforce the 20-stock limit on the server side
+      // This runs on every 'update' or 'create' attempt
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.wishlist.size() <= 20;
+    }
+  }
+}
